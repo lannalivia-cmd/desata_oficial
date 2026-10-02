@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 92">
+<defs>
+ <linearGradient id="g1" x1="0" x2="1"><stop stop-color="#ff7416"/><stop offset="1" stop-color="#d21e61"/></linearGradient>
+</defs>
+<text x="0" y="70" font-family="Arial,Helvetica,sans-serif" font-size="68" font-weight="800" fill="url(#g1)" letter-spacing="-2">DESATA</text>
+<path d="M105 62 C130 88 158 88 180 62 C195 45 208 43 223 55" fill="none" stroke="url(#g1)" stroke-width="10" stroke-linecap="round"/>
+<path d="M224 12 l40 0 13 10 -13 10 -40 0z" fill="#c51e5b"/>
+<path d="M230 31 q17 12 34 0 v16 q-17 12-34 0z" fill="#c51e5b"/>
+<circle cx="270" cy="54" r="4" fill="#c51e5b"/>
+</svg>

@@ -1,0 +1,428 @@
+<script>
+
+let pedidoAtual = null;
+
+
+/* ==================================================
+   PEGAR ID DO PEDIDO
+================================================== */
+
+const parametros =
+    new URLSearchParams(window.location.search);
+
+const idPedido =
+    parametros.get("id");
+
+
+if (!idPedido) {
+
+    document.getElementById("subtitulo").textContent =
+        "Nenhum pedido foi selecionado.";
+
+    document.getElementById("titulo").textContent =
+        "Pedido não encontrado.";
+
+} else {
+
+    carregarPedido(idPedido);
+}
+
+
+/* ==================================================
+   CARREGAR PEDIDO
+================================================== */
+
+function carregarPedido(id) {
+fetch(
+    "config/pedidos.php?id=" +
+    encodeURIComponent(id)
+)
+
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error(
+                "Erro ao carregar o pedido."
+            );
+        }
+
+        return response.json();
+    })
+
+    .then(data => {
+
+        if (data.sucesso === false) {
+            throw new Error(data.erro);
+        }
+
+        pedidoAtual =
+            Array.isArray(data)
+                ? data[0]
+                : data;
+
+        if (!pedidoAtual) {
+            throw new Error(
+                "Pedido não encontrado."
+            );
+        }
+
+        preencherPagina(pedidoAtual);
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        document.getElementById(
+            "subtitulo"
+        ).textContent =
+            "Não foi possível carregar este pedido.";
+
+        document.getElementById(
+            "titulo"
+        ).textContent =
+            "Erro ao carregar pedido.";
+    });
+}
+
+
+/* ==================================================
+   PREENCHER PÁGINA
+================================================== */
+
+function preencherPagina(pedido) {
+
+    document.getElementById("subtitulo")
+        .textContent =
+        pedido.titulo ||
+        "Pedido de ajuda";
+
+
+    document.getElementById("titulo")
+        .textContent =
+        pedido.titulo ||
+        "Não informado";
+
+
+    document.getElementById("mensagem")
+        .textContent =
+        pedido.mensagem ||
+        "Nenhuma mensagem enviada.";
+
+
+    document.getElementById("descricao")
+        .textContent =
+        pedido.descricao ||
+        "Nenhuma descrição informada.";
+
+
+    document.getElementById("area")
+        .textContent =
+        pedido.area ||
+        "Não informado";
+
+
+    const cidade =
+        pedido.cidade || "";
+
+    const estado =
+        pedido.estado || "";
+
+
+    document.getElementById("local")
+        .textContent =
+        cidade && estado
+            ? `${cidade} - ${estado}`
+            : "Não informado";
+
+
+    document.getElementById("publico")
+        .textContent =
+        pedido.publico_alvo ||
+        "Não informado";
+
+
+    document.getElementById("status")
+        .textContent =
+        formatarStatus(
+            pedido.status
+        );
+
+
+    /*
+     * O plano NÃO vem de pedido.descricao_plano.
+     *
+     * Ele pertence à tabela planos_acao.
+     *
+     * O endpoint abaixo busca o plano existente.
+     */
+
+    carregarPlano(
+        pedido.no_id
+    );
+}
+
+
+/* ==================================================
+   CARREGAR PLANO
+================================================== */
+
+function carregarPlano(noId) {
+
+    fetch(
+        "plano.php?no_id=" +
+        encodeURIComponent(noId)
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return response.json();
+    })
+
+    .then(data => {
+
+        if (!data) {
+            return;
+        }
+
+        const plano =
+            Array.isArray(data)
+                ? data[0]
+                : data;
+
+        if (!plano) {
+            return;
+        }
+
+        document.getElementById("plano")
+            .value =
+            plano.objetivo ||
+            plano.descricao ||
+            "";
+    })
+
+    .catch(error => {
+
+        console.log(
+            "Nenhum plano existente."
+        );
+    });
+}
+
+
+/* ==================================================
+   FORMATAR STATUS
+================================================== */
+
+function formatarStatus(status) {
+
+    if (!status) {
+        return "Pendente";
+    }
+
+    return String(status)
+        .replaceAll("_", " ")
+        .replace(
+            /\b\w/g,
+            letra => letra.toUpperCase()
+        );
+}
+
+
+/* ==================================================
+   SALVAR RASCUNHO
+================================================== */
+
+function salvarRascunho() {
+
+    if (!pedidoAtual) {
+
+        alert(
+            "Nenhum pedido foi carregado."
+        );
+
+        return;
+    }
+
+
+    const plano =
+        document.getElementById(
+            "plano"
+        ).value.trim();
+
+
+    if (!plano) {
+
+        alert(
+            "Escreva o objetivo ou descrição do plano antes de salvar."
+        );
+
+        return;
+    }
+
+
+    const dados =
+        new FormData();
+
+
+    dados.append(
+        "no_id",
+        pedidoAtual.no_id
+    );
+
+
+    dados.append(
+        "professor_id",
+        pedidoAtual.professor_id
+    );
+
+
+    dados.append(
+        "titulo",
+        "Plano de ação"
+    );
+
+
+    dados.append(
+        "objetivo",
+        plano
+    );
+
+
+    dados.append(
+        "descricao",
+        ""
+    );
+
+
+    fetch(
+        "salvar-plano.php",
+        {
+            method: "POST",
+            body: dados
+        }
+    )
+
+    .then(response =>
+        response.json()
+    )
+
+    .then(data => {
+
+        if (data.sucesso) {
+
+            alert(
+                "Rascunho salvo com sucesso!"
+            );
+
+        } else {
+
+            alert(
+                data.erro ||
+                "Não foi possível salvar o rascunho."
+            );
+        }
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+    });
+}
+
+
+/* ==================================================
+   ASSUMIR PEDIDO
+================================================== */
+
+function assumirPedido() {
+
+    if (!pedidoAtual) {
+
+        alert(
+            "Nenhum pedido foi carregado."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            "Deseja assumir este pedido e iniciar o plano?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const dados =
+        new FormData();
+
+
+    dados.append(
+        "pedido_id",
+        pedidoAtual.id
+    );
+
+
+    fetch(
+        "assumir-pedido.php",
+        {
+            method: "POST",
+            body: dados
+        }
+    )
+
+    .then(response =>
+        response.json()
+    )
+
+    .then(data => {
+
+        if (data.sucesso) {
+
+            pedidoAtual.status =
+                "aceito";
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Aceito";
+
+
+            alert(
+                "Pedido assumido com sucesso!"
+            );
+
+        } else {
+
+            alert(
+                data.erro ||
+                "Não foi possível assumir o pedido."
+            );
+        }
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+    });
+}
+
+</script>

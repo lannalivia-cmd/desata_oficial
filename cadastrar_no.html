@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DESATA | Cadastrar Nó</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a class="brand" href="index.html" aria-label="DESATA - início">
+        <img src="assets/logo.svg" alt="DESATA">
+    </a>
+
+    <nav class="nav-links">
+        <a href="index.html" class="active">Sobre</a>
+        <a href="mural.html">Mural de Nós</a>
+        <a href="painel.html">Painel</a>
+        <a href="plano_acao.html">Plano de Ação</a>
+    </nav>
+
+    <div class="nav-actions">
+        <a href="login.html" class="btn btn-ghost">Entrar</a>
+
+        <a href="login-professor.html" class="btn btn-outline">
+            Área do Professor
+        </a>
+
+        <a href="cadastrar_no.html" class="btn btn-primary">
+            Cadastrar um Nó
+        </a>
+    </div>
+
+</header>
+
+
+<main class="page-container form-wrapper">
+
+    <div class="form-header">
+
+        <h2>Cadastre um novo Nó</h2>
+
+        <p class="page-subtitle">
+            Conte qual dificuldade de aprendizagem precisa de apoio.
+        </p>
+
+    </div>
+
+
+    <form class="styled-form" id="node-form">
+
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label for="titulo">
+                    Título do desafio
+                </label>
+
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    required
+                    placeholder="Ex.: Dificuldade com leitura"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="cidade_estado">
+                    Cidade / Estado
+                </label>
+
+                <input
+                    type="text"
+                    id="cidade_estado"
+                    name="cidade_estado"
+                    required
+                    placeholder="Ex.: Campinas, SP"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label for="area_id">
+                    Área pedagógica
+                </label>
+
+                <select
+                    id="area_id"
+                    name="area_id"
+                    required
+                >
+
+                    <option value="">
+                        Selecione...
+                    </option>
+
+                    <option value="1">
+                        Alfabetização
+                    </option>
+
+                    <option value="2">
+                        Matemática / Exatas
+                    </option>
+
+                    <option value="3">
+                        Tecnologia & Inclusão
+                    </option>
+
+                    <option value="4">
+                        Artes & Cultura
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="publico_alvo">
+                    Público-alvo
+                </label>
+
+                <input
+                    type="text"
+                    id="publico_alvo"
+                    name="publico_alvo"
+                    placeholder="Ex.: estudantes do ensino fundamental"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="descricao">
+                Descrição da dificuldade
+            </label>
+
+            <textarea
+                id="descricao"
+                name="descricao"
+                required
+                placeholder="Explique o contexto, a principal dificuldade e que tipo de apoio seria útil."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn btn-primary btn-submit"
+        >
+            Publicar Nó Comunitário
+        </button>
+
+    </form>
+
+</main>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("node-form");
+
+    if (!form) {
+        console.error("Formulário node-form não encontrado.");
+        return;
+    }
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        console.log("Botão Publicar Nó clicado!");
+
+        const botao = form.querySelector(".btn-submit");
+
+        const titulo = document.getElementById("titulo").value.trim();
+        const cidadeEstado = document.getElementById("cidade_estado").value.trim();
+        const areaId = document.getElementById("area_id").value;
+        const publicoAlvo = document.getElementById("publico_alvo").value.trim();
+        const descricao = document.getElementById("descricao").value.trim();
+
+        if (!titulo || !cidadeEstado || !areaId || !descricao) {
+            alert("Preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        // Cidade e estado
+        const partes = cidadeEstado.split(",");
+
+        const cidade = partes[0].trim();
+        const estado = partes[1]
+            ? partes[1].trim().toUpperCase()
+            : "";
+
+        if (!cidade || estado.length !== 2) {
+            alert("Digite a cidade e o estado assim: Regente Feijó, SP");
+            return;
+        }
+
+        // Usuário temporário para teste
+        const usuarioId = 1;
+
+        const dados = new FormData();
+
+        dados.append("usuario_id", usuarioId);
+        dados.append("area_id", areaId);
+        dados.append("titulo", titulo);
+        dados.append("cidade", cidade);
+        dados.append("estado", estado);
+        dados.append("publico_alvo", publicoAlvo);
+        dados.append("descricao", descricao);
+
+        botao.disabled = true;
+        botao.textContent = "Publicando...";
+
+        try {
+
+            const resposta = await fetch("config/salvar-no.php", {
+                method: "POST",
+                body: dados
+            });
+
+            console.log("Status:", resposta.status);
+
+            const texto = await resposta.text();
+
+            console.log("Resposta do PHP:", texto);
+
+            let resultado;
+
+            try {
+                resultado = JSON.parse(texto);
+            } catch (erro) {
+
+                console.error("O PHP não retornou JSON:", texto);
+
+                alert(
+                    "O servidor respondeu com um erro. " +
+                    "Abra o console (F12) para ver os detalhes."
+                );
+
+                return;
+            }
+
+            if (resultado.sucesso) {
+
+                alert("Nó publicado com sucesso!");
+
+                form.reset();
+
+                window.location.href = "mural.html";
+
+            } else {
+
+                alert(
+                    resultado.erro ||
+                    "Não foi possível salvar o nó."
+                );
+
+            }
+
+        } catch (erro) {
+
+            console.error("Erro no fetch:", erro);
+
+            alert(
+                "Não foi possível conectar ao servidor.\n\n" +
+                "Verifique se o Apache e o MySQL estão ligados."
+            );
+
+        } finally {
+
+            botao.disabled = false;
+            botao.textContent = "Publicar Nó Comunitário";
+
+        }
+
+    });
+
+});
+</script>
+
+</body>
+</html>

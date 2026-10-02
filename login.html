@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DESATA | Entrar</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="DESATA">
+    </a>
+
+    <div></div>
+
+    <div class="nav-actions">
+        <a href="index.html" class="btn btn-ghost">
+            Voltar ao site
+        </a>
+    </div>
+
+</header>
+
+
+<main class="auth-page">
+
+    <section class="auth-card">
+
+        <aside class="auth-side">
+
+            <img src="assets/logo.svg" alt="DESATA">
+
+            <h2>Desate um caminho.</h2>
+
+            <p>
+                Entre na sua conta para acompanhar seus pedidos
+                de ajuda e participar da comunidade DESATA.
+            </p>
+
+        </aside>
+
+
+        <div class="auth-form">
+
+            <h1>Bem-vindo de volta</h1>
+
+            <p class="lead">
+                Acesse sua conta para continuar.
+            </p>
+
+
+            <form id="login-form">
+
+                <div class="form-group">
+
+                    <label for="login-email">
+                        E-mail
+                    </label>
+
+                    <input
+                        id="login-email"
+                        type="email"
+                        required
+                        placeholder="voce@email.com"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="login-password">
+                        Senha
+                    </label>
+
+                    <div class="password-wrap">
+
+                        <input
+                            id="login-password"
+                            type="password"
+                            required
+                            placeholder="Digite sua senha"
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                        >
+                            mostrar
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary auth-submit"
+                >
+                    Entrar
+                </button>
+
+            </form>
+
+
+            <!-- Mensagem de erro/sucesso -->
+
+            <div
+                id="login-message"
+                style="
+                    display:none;
+                    margin-top:15px;
+                    padding:12px;
+                    border-radius:8px;
+                    font-size:14px;
+                "
+            ></div>
+
+
+            <div class="auth-links">
+
+                <a href="login-professor.html">
+                    Sou professor
+                </a>
+
+                <a href="index.html">
+                    Voltar ao início
+                </a>
+
+            </div>
+
+
+            <div class="demo-note">
+
+                Usuário de teste:
+                <strong>usuario@desata.com</strong><br>
+
+                Senha:
+                <strong>123456</strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+const form = document.getElementById("login-form");
+
+const emailInput = document.getElementById("login-email");
+
+const senhaInput = document.getElementById("login-password");
+
+const mensagem = document.getElementById("login-message");
+
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+
+    const email = emailInput.value.trim();
+
+    const senha = senhaInput.value;
+
+
+    if (!email || !senha) {
+
+        mostrarMensagem(
+            "Preencha o e-mail e a senha.",
+            false
+        );
+
+        return;
+    }
+
+
+    const botao = form.querySelector("button[type='submit']");
+
+    botao.disabled = true;
+
+    botao.textContent = "Entrando...";
+
+
+    try {
+
+        const resposta = await fetch(
+            "config/login.php",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+
+                body: new URLSearchParams({
+                    email: email,
+                    senha: senha
+                })
+            }
+        );
+
+
+        const dados = await resposta.json();
+
+
+        if (!resposta.ok || !dados.sucesso) {
+
+            mostrarMensagem(
+                dados.erro || "E-mail ou senha incorretos.",
+                false
+            );
+
+            return;
+        }
+
+
+        mostrarMensagem(
+            "Login realizado com sucesso! Redirecionando...",
+            true
+        );
+
+
+        setTimeout(() => {
+
+            window.location.href = "index.html";
+
+        }, 800);
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mostrarMensagem(
+            "Não foi possível conectar ao servidor.",
+            false
+        );
+
+    } finally {
+
+        botao.disabled = false;
+
+        botao.textContent = "Entrar";
+
+    }
+
+});
+
+
+function mostrarMensagem(texto, sucesso) {
+
+    mensagem.style.display = "block";
+
+    mensagem.textContent = texto;
+
+    mensagem.style.background =
+        sucesso ? "#e8f7ef" : "#fdeaea";
+
+    mensagem.style.color =
+        sucesso ? "#18794e" : "#b42318";
+
+    mensagem.style.border =
+        sucesso
+            ? "1px solid #b7e4c7"
+            : "1px solid #f3b4b4";
+}
+
+
+// Mostrar / esconder senha
+
+const toggleSenha =
+    document.querySelector(".toggle-password");
+
+
+toggleSenha.addEventListener("click", function() {
+
+    if (senhaInput.type === "password") {
+
+        senhaInput.type = "text";
+
+        toggleSenha.textContent = "ocultar";
+
+    } else {
+
+        senhaInput.type = "password";
+
+        toggleSenha.textContent = "mostrar";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

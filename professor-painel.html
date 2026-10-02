@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DESATA | Painel do Professor</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="DESATA">
+    </a>
+
+    <nav class="nav-links">
+
+        <a href="professor-painel.html" class="active">
+            Nós
+        </a>
+
+        <a href="pedido-ajuda.html">
+            Detalhes
+        </a>
+
+    </nav>
+
+    <div class="nav-actions">
+
+        <span class="btn btn-ghost" id="prof-name">
+            Professor
+        </span>
+
+        <a href="logout.html" class="btn btn-primary">
+            Sair
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="professor-layout">
+
+
+    <!-- =====================================
+         TOPO DO PAINEL
+    ====================================== -->
+
+    <div class="professor-top">
+
+        <div>
+
+            <h1>
+                Painel do Professor
+            </h1>
+
+            <p>
+                Dificuldades de aprendizagem aguardando acompanhamento.
+            </p>
+
+        </div>
+
+
+        <div class="professor-actions">
+
+            <button
+                class="btn btn-outline"
+                onclick="carregarNos()">
+
+                Atualizar nós
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================
+         ÁREA PRINCIPAL
+    ====================================== -->
+
+    <section class="request-grid">
+
+
+        <!-- =================================
+             LISTA DE NÓS
+        ================================== -->
+
+        <div class="requests-panel">
+
+            <div class="panel-title">
+
+                <h2>
+                    Nós disponíveis
+                </h2>
+
+
+                <select
+                    class="filter-mini"
+                    id="filtroPedidos"
+                    onchange="filtrarNos()">
+
+                    <option value="todos">
+                        Todos
+                    </option>
+
+                    <option value="aberto">
+                        Abertos
+                    </option>
+
+                    <option value="em_andamento">
+                        Em andamento
+                    </option>
+
+                    <option value="concluido">
+                        Concluídos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!--
+                OS NÓS DO BANCO
+                SERÃO INSERIDOS AQUI
+            -->
+
+            <div
+                class="request-list"
+                id="listaPedidos">
+
+                <p id="carregando">
+                    Carregando nós...
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================
+             RESUMO DO NÓ
+        ================================== -->
+
+        <aside class="detail-panel">
+
+            <h2>
+                Resumo do nó
+            </h2>
+
+
+            <div id="resumoPedido">
+
+                <p>
+                    Selecione um nó para visualizar os detalhes.
+                </p>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+</main>
+
+
+
+<script>
+
+    /* =========================================
+       VARIÁVEIS
+    ========================================= */
+
+    let nos = [];
+
+    let noSelecionado = null;
+
+
+
+    /* =========================================
+       CARREGAR NÓS DO BANCO
+    ========================================= */
+
+    function carregarNos() {
+
+        const lista =
+            document.getElementById("listaPedidos");
+
+
+        lista.innerHTML = `
+            <p>Carregando nós...</p>
+        `;
+
+
+        fetch("config/nos.php")
+
+            .then(response => {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Erro ao acessar nos.php"
+                    );
+
+                }
+
+                return response.json();
+
+            })
+
+
+            .then(data => {
+
+                console.log(
+                    "Nós recebidos do banco:",
+                    data
+                );
+
+
+                /*
+                 * Verifica se o PHP retornou
+                 * um objeto de erro.
+                 */
+
+                if (
+                    !Array.isArray(data)
+                ) {
+
+                    throw new Error(
+                        data.erro ||
+                        "Resposta inválida do servidor."
+                    );
+
+                }
+
+
+                nos = data;
+
+
+                mostrarNos(nos);
+
+            })
+
+
+            .catch(error => {
+
+                console.error(
+                    "Erro ao carregar nós:",
+                    error
+                );
+
+
+                lista.innerHTML = `
+
+                    <p style="
+                        color:red;
+                        font-weight:600;
+                    ">
+
+                        Não foi possível carregar os nós.
+
+                    </p>
+
+                    <p style="
+                        font-size:13px;
+                        color:#777;
+                    ">
+
+                        Verifique o console do navegador
+                        para mais detalhes.
+
+                    </p>
+
+                `;
+
+            });
+
+    }
+
+
+
+    /* =========================================
+       MOSTRAR NÓS NA TELA
+    ========================================= */
+
+    function mostrarNos(listaNos) {
+
+        const lista =
+            document.getElementById("listaPedidos");
+
+
+        lista.innerHTML = "";
+
+
+        /*
+         * Nenhum nó encontrado
+         */
+
+        if (
+            !listaNos ||
+            listaNos.length === 0
+        ) {
+
+            lista.innerHTML = `
+
+                <p>
+                    Nenhum nó disponível.
+                </p>
+
+            `;
+
+            return;
+
+        }
+
+
+
+        /*
+         * Cria cada cartão
+         */
+
+        listaNos.forEach(no => {
+
+            const item =
+                document.createElement("div");
+
+
+            item.className =
+                "request";
+
+
+            /*
+             * Quando clicar no nó,
+             * mostra os detalhes.
+             */
+
+            item.onclick = function () {
+
+                selecionarNo(no);
+
+            };
+
+
+
+            /*
+             * Formata o status
+             */
+
+            let status =
+                no.status || "aberto";
+
+
+            let statusFormatado =
+                status
+                    .replaceAll("_", " ")
+                    .toUpperCase();
+
+
+
+            /*
+             * Conteúdo do cartão
+             */
+
+            item.innerHTML = `
+
+                <div class="request-row">
+
+                    <h3>
+                        ${escapeHTML(
+                            no.titulo ||
+                            "Nó sem título"
+                        )}
+                    </h3>
+
+
+                    <span style="
+                        font-size:9px;
+                        color:#0788c9;
+                        font-weight:800;
+                        text-transform:uppercase;
+                    ">
+
+                        ${statusFormatado}
+
+                    </span>
+
+                </div>
+
+
+
+                <p>
+
+                    ${escapeHTML(
+                        no.descricao ||
+                        "Sem descrição."
+                    )}
+
+                </p>
+
+
+
+                <div class="request-meta">
+
+                    <span>
+
+                        📍
+
+                        ${escapeHTML(
+                            no.cidade || ""
+                        )}
+
+                        -
+
+                        ${escapeHTML(
+                            no.estado || ""
+                        )}
+
+                    </span>
+
+
+                    <span>
+
+                        ${escapeHTML(
+                            no.area ||
+                            "Área não informada"
+                        )}
+
+                    </span>
+
+
+                    <span>
+
+                        ${escapeHTML(
+                            no.publico_alvo ||
+                            "Público não informado"
+                        )}
+
+                    </span>
+
+                </div>
+
+            `;
+
+
+            lista.appendChild(item);
+
+        });
+
+    }
+
+
+
+    /* =========================================
+       SELECIONAR NÓ
+    ========================================= */
+
+    function selecionarNo(no) {
+
+        noSelecionado = no;
+
+
+        const resumo =
+            document.getElementById(
+                "resumoPedido"
+            );
+
+
+        const status =
+            (no.status || "aberto")
+                .replaceAll("_", " ")
+                .toUpperCase();
+
+
+
+        resumo.innerHTML = `
+
+            <div class="detail-label">
+                SITUAÇÃO
+            </div>
+
+            <p>
+
+                <strong style="
+                    color:#0788c9;
+                ">
+
+                    ${status}
+
+                </strong>
+
+            </p>
+
+
+
+            <div class="detail-label">
+                DESAFIO
+            </div>
+
+            <h3>
+
+                ${escapeHTML(
+                    no.titulo ||
+                    "Sem título"
+                )}
+
+            </h3>
+
+
+
+            <div class="detail-label">
+                DESCRIÇÃO
+            </div>
+
+            <p>
+
+                ${escapeHTML(
+                    no.descricao ||
+                    "Não informado"
+                )}
+
+            </p>
+
+
+
+            <div class="detail-label">
+                ÁREA PEDAGÓGICA
+            </div>
+
+            <p>
+
+                ${escapeHTML(
+                    no.area ||
+                    "Não informada"
+                )}
+
+            </p>
+
+
+
+            <div class="detail-label">
+                PÚBLICO-ALVO
+            </div>
+
+            <p>
+
+                ${escapeHTML(
+                    no.publico_alvo ||
+                    "Não informado"
+                )}
+
+            </p>
+
+
+
+            <div class="detail-label">
+                LOCALIZAÇÃO
+            </div>
+
+            <p>
+
+                ${escapeHTML(
+                    no.cidade ||
+                    ""
+                )}
+
+                -
+
+                ${escapeHTML(
+                    no.estado ||
+                    ""
+                )}
+
+            </p>
+
+
+
+            <div class="detail-label">
+                PUBLICADO POR
+            </div>
+
+            <p>
+
+                ${escapeHTML(
+                    no.usuario_nome ||
+                    "Usuário"
+                )}
+
+            </p>
+
+
+
+            <div class="detail-actions">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="assumirNo()">
+
+                    Assumir atendimento
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+
+    /* =========================================
+       FILTRAR NÓS
+    ========================================= */
+
+    function filtrarNos() {
+
+        const filtro =
+            document.getElementById(
+                "filtroPedidos"
+            ).value;
+
+
+        /*
+         * Mostrar todos
+         */
+
+        if (
+            filtro === "todos"
+        ) {
+
+            mostrarNos(nos);
+
+            return;
+
+        }
+
+
+        /*
+         * Filtrar pelo status
+         */
+
+        const filtrados =
+            nos.filter(no => {
+
+                return String(
+                    no.status || ""
+                ).toLowerCase() === filtro;
+
+            });
+
+
+        mostrarNos(filtrados);
+
+    }
+
+
+
+    /* =========================================
+       ASSUMIR NÓ
+    ========================================= */
+
+    function assumirNo() {
+
+        if (!noSelecionado) {
+
+            alert(
+                "Selecione um nó primeiro."
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Por enquanto apenas confirma
+         * a seleção.
+         *
+         * A próxima etapa será conectar
+         * este botão ao banco de dados.
+         */
+
+        alert(
+            "Nó selecionado para atendimento!"
+        );
+
+
+        console.log(
+            "Nó selecionado:",
+            noSelecionado
+        );
+
+    }
+
+
+
+    /* =========================================
+       PROTEÇÃO CONTRA HTML NO TEXTO
+    ========================================= */
+
+    function escapeHTML(valor) {
+
+        return String(valor)
+
+            .replaceAll("&", "&amp;")
+
+            .replaceAll("<", "&lt;")
+
+            .replaceAll(">", "&gt;")
+
+            .replaceAll('"', "&quot;")
+
+            .replaceAll("'", "&#039;");
+
+    }
+
+
+
+    /* =========================================
+       INICIAR PAINEL
+    ========================================= */
+
+    carregarNos();
+
+</script>
+
+
+</body>
+</html>

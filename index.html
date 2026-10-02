@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DESATA | Educação que desata caminhos</title><link rel="stylesheet" href="style.css"></head><body>
+
+<header class="navbar">
+  <a class="brand" href="index.html" aria-label="DESATA - início"><img src="assets/logo.svg" alt="DESATA"></a>
+  <nav class="nav-links"><a href="index.html" class="active">Sobre</a><a href="mural.html" class="">Mural de Nós</a><a href="painel.html" class="">Painel</a><a href="plano_acao.html" class="">Plano de Ação</a></nav>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-ghost">Entrar</a>
+    <a href="login-professor.html" class="btn btn-outline">Área do Professor</a>
+    <a href="cadastrar_no.html" class="btn btn-primary">Cadastrar um Nó</a>
+  </div>
+</header>
+<main class="hero">
+  <span class="badge">PLATAFORMA EDUCACIONAL</span>
+  <h1>Transforme a educação<br><span class="highlight">desatando nós.</span></h1>
+  <p class="subtitle">O DESATA conecta pessoas que enfrentam dificuldades na aprendizagem a educadores e voluntários que podem ajudar a construir caminhos possíveis.</p>
+  <div style="display:flex;gap:9px;justify-content:center;margin-bottom:28px">
+    <a class="btn btn-primary" href="cadastrar_no.html">Cadastrar uma dificuldade</a>
+    <a class="btn btn-outline" href="mural.html">Ver o Mural</a>
+  </div>
+  <form id="search-form" class="search-bar">
+    <div class="filter-group"><label>Região / Cidade</label><select id="filter-regiao"><option value="">Todas as regiões</option><option value="sp">São Paulo</option><option value="rj">Rio de Janeiro</option><option value="mg">Minas Gerais</option></select></div>
+    <div class="filter-divider"></div>
+    <div class="filter-group"><label>Área Pedagógica</label><select id="filter-area"><option value="">Todas as áreas</option><option value="alfabetizacao">Alfabetização</option><option value="matematica">Matemática</option><option value="tecnologia">Tecnologia & Inclusão</option></select></div>
+    <div class="filter-divider"></div>
+    <div class="filter-group"><label>Status do Nó</label><select id="filter-status"><option value="">Todos os status</option><option value="aberto">Em aberto</option><option value="andamento">Em andamento</option></select></div>
+    <button class="btn-search" type="submit" aria-label="Buscar">⌕</button>
+  </form>
+  <section class="news-cards-section">
+    <article class="news-card" style="background-image:url('https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80')"><div class="card-overlay"><span class="news-badge">EDUCAÇÃO</span><div class="card-bottom"><h3>Desafios de aprendizagem precisam de redes de apoio.</h3><p class="news-source">Conheça os nós cadastrados.</p><a class="card-btn" href="mural.html">Explorar desafios ↗</a></div></div></article>
+    <article class="news-card" style="background-image:url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80')"><div class="card-overlay"><span class="news-badge">CONEXÃO</span><div class="card-bottom"><h3>Professores podem acompanhar e assumir pedidos.</h3><p class="news-source">Área exclusiva para educadores.</p><a class="card-btn" href="login-professor.html">Acessar professores ↗</a></div></div></article>
+    <article class="news-card" style="background-image:url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80')"><div class="card-overlay"><span class="news-badge">IMPACTO</span><div class="card-bottom"><h3>Do problema ao plano de ação, passo a passo.</h3><p class="news-source">Veja como o DESATA funciona.</p><a class="card-btn" href="plano_acao.html">Conhecer metodologia ↗</a></div></div></article>
+  </section>
+</main><script src="java.js"></script></body></html>

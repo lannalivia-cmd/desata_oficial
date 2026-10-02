@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DESATA | Área do Professor</title><link rel="stylesheet" href="style.css"></head><body>
+<header class="navbar"><a class="brand" href="index.html"><img src="assets/logo.svg" alt="DESATA"></a><div></div><div class="nav-actions"><a href="index.html" class="btn btn-ghost">Voltar ao site</a></div></header>
+<main class="auth-page"><section class="auth-card"><aside class="auth-side"><img src="assets/logo.svg" alt="DESATA"><h2>Área dos educadores.</h2><p>Acesse os pedidos de ajuda, acompanhe desafios e organize ações pedagógicas.</p></aside>
+<div class="auth-form"><h1>Login do Professor</h1><p class="lead">Esta área é destinada a professores e administradores do DESATA.</p><form id="prof-login-form"><div class="form-group"><label>E-mail institucional</label><input id="prof-email" type="email" required placeholder="professor@desata.com"></div><div class="form-group"><label>Senha</label><div class="password-wrap"><input id="prof-password" type="password" required placeholder="Digite sua senha"><button type="button" class="toggle-password">mostrar</button></div></div><button class="btn btn-primary auth-submit">Acessar painel</button></form><div class="auth-links"><a href="login.html">Entrar como comunidade</a><a href="index.html">Início</a></div><div class="demo-note">Acesso de demonstração: <strong>professor@desata.com</strong> / <strong>123456</strong>.</div></div></section></main><script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("prof-login-form");
+
+    if (!form) return;
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const email = document.getElementById("prof-email").value.trim();
+        const senha = document.getElementById("prof-password").value;
+
+        if (!email || !senha) {
+            alert("Digite seu e-mail e sua senha.");
+            return;
+        }
+
+        const botao = form.querySelector(".auth-submit");
+
+        botao.disabled = true;
+        botao.textContent = "Entrando...";
+
+        const dados = new FormData();
+
+        dados.append("email", email);
+        dados.append("senha", senha);
+
+        try {
+
+            const resposta = await fetch("config/login-professor.php", {
+                method: "POST",
+                body: dados
+            });
+
+            const texto = await resposta.text();
+
+            console.log("Resposta do servidor:", texto);
+
+            let resultado;
+
+            try {
+                resultado = JSON.parse(texto);
+            } catch (erro) {
+
+                console.error("Resposta não é JSON:", texto);
+
+                alert("O servidor retornou um erro. Veja o Console (F12).");
+                return;
+            }
+
+            if (resultado.sucesso) {
+
+                alert("Login realizado com sucesso!");
+
+                window.location.href = "professor-painel.html";
+
+            } else {
+
+                alert(resultado.erro || "Não foi possível realizar o login.");
+
+            }
+
+        } catch (erro) {
+
+            console.error("Erro:", erro);
+
+            alert(
+                "Erro de conexão com o servidor. " +
+                "Verifique se o Apache e o MySQL estão ligados."
+            );
+
+        } finally {
+
+            botao.disabled = false;
+            botao.textContent = "Acessar painel";
+
+        }
+
+    });
+
+
+    // Mostrar / esconder senha
+    const toggle = document.querySelector(".toggle-password");
+    const senhaInput = document.getElementById("prof-password");
+
+    if (toggle && senhaInput) {
+
+        toggle.addEventListener("click", function () {
+
+            if (senhaInput.type === "password") {
+
+                senhaInput.type = "text";
+                toggle.textContent = "ocultar";
+
+            } else {
+
+                senhaInput.type = "password";
+                toggle.textContent = "mostrar";
+
+            }
+
+        });
+
+    }
+
+});
+</script></body></html>
